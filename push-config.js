@@ -1,10 +1,8 @@
-// Phone reminders. Fill this in during Part 2 of the guide. Leave the quotes empty to keep reminders switched off.
-// (Your link to the Google Sheet stays in config.js - this file does not touch it.)
 window.APP_CONFIG = window.APP_CONFIG || {};
 window.APP_CONFIG.FIREBASE = {
-  apiKey: "",
-  projectId: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyDGDrzr35B95dsaGNW_Ep2bCflYhWKNUT8",
+  projectId: "rentbook-a421a",
+  messagingSenderId: "528203154286",
+  appId: "1:528203154286:web:a13789b4b73a515fa9f77f"
 };
-window.APP_CONFIG.VAPID_KEY = "";
+window.APP_CONFIG.VAPID_KEY = "BC-Kebk5QoNlyscnqrvC5yUL4B8QsJV5GmbudUoRHM2hciJWdMf6MA9BJ2qoyfGvmz-NtQEFbHzrMQoqyrlXyG0";
