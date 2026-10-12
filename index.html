@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rentbook</title><link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1F6B4F"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F7F5;--card:#fff;--ink:#14201B;--mute:#52635B;--line:#D9E3DE;--pine:#1F6B4F;--pine2:#E1F0E8;--onp:#fff;--late:#B71C1C;--late2:#FBE3E1;--today:#B84F00;--today2:#FFE8D0;--soon:#7A5F00;--soon2:#FFF2BF;--ok:#245FA6;--ok2:#DDEAF8}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1613;--card:#17231E;--ink:#EAF2EE;--mute:#A3B5AC;--line:#2B3C34;--pine:#55BC90;--pine2:#1B3A2D;--onp:#07120C;--late:#FF8F86;--late2:#3A1D1B;--today:#FFB46B;--today2:#3A2814;--soon:#F2D04B;--soon2:#38300F;--ok:#85B8F2;--ok2:#172B42}}
+:root[data-theme="dark"]{--bg:#0E1613;--card:#17231E;--ink:#EAF2EE;--mute:#A3B5AC;--line:#2B3C34;--pine:#55BC90;--pine2:#1B3A2D;--onp:#07120C;--late:#FF8F86;--late2:#3A1D1B;--today:#FFB46B;--today2:#3A2814;--soon:#F2D04B;--soon2:#38300F;--ok:#85B8F2;--ok2:#172B42}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{font-size:18px;scroll-padding-top:env(safe-area-inset-top,0px)}
+html[data-ts="1"]{font-size:20px}
+html[data-ts="2"]{font-size:22px}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.4 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:560px;margin:0 auto;padding:.7rem 1rem 9rem}
+h1{font-size:1.7rem;line-height:1.1;margin:0}h2{font-size:1.35rem;margin:0 0 .8rem}h3{font-size:1.2rem;margin:0}p{margin:0}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:.7rem;margin:.5rem 0 1rem}
+.mute{color:var(--mute);font-size:.9rem}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.btn{display:block;width:100%;min-height:3.2rem;border:0;border-radius:.8rem;background:var(--pine);color:var(--onp);font-weight:700;font-size:1.05rem;padding:0 1rem}
+.btn.ghost{background:transparent;color:var(--pine);border:2px solid var(--pine)}
+.btn.warn{background:var(--late);color:var(--card)}
+.btn:disabled{opacity:.6}
+.lnk{background:none;border:0;color:var(--pine);font-weight:700;font-size:1rem;padding:.55rem .2rem;min-height:2.7rem}
+.hero{background:var(--pine);color:var(--onp);border-radius:1.4rem 1.4rem 1.4rem .45rem;padding:1.1rem 1.1rem 1rem;margin-bottom:1rem}
+.hero b{display:block;font-size:2.5rem;line-height:1.05;margin:.1rem 0 .65rem}
+.chips{display:flex;gap:.45rem;flex-wrap:wrap}
+.chip{display:inline-block;border-radius:99px;padding:.28rem .75rem;font-weight:700;font-size:.9rem;background:var(--sb);color:var(--sc)}
+.late{--sc:var(--late);--sb:var(--late2)}.today{--sc:var(--today);--sb:var(--today2)}.soon{--sc:var(--soon);--sb:var(--soon2)}.ok{--sc:var(--ok);--sb:var(--ok2)}.out{--sc:var(--mute);--sb:var(--line)}
+.sec{display:flex;justify-content:space-between;align-items:center;font-size:1.2rem;margin:1.3rem 0 .6rem}
+.sec span{font-size:.95rem;min-width:1.9rem;text-align:center;border-radius:99px;padding:.1rem .6rem;background:var(--sb);color:var(--sc)}
+.c{background:var(--card);border:1px solid var(--line);border-left:.5rem solid var(--sc);border-radius:1rem;padding:1rem;margin-bottom:.8rem}
+.top{display:flex;justify-content:space-between;gap:.7rem}
+.big{text-align:right;color:var(--sc);flex:none}.big b{display:block;font-size:2rem;line-height:1}.big span{font-size:.85rem;font-weight:700}
+.owe{margin:.7rem 0 .15rem;font-size:1.25rem;color:var(--sc)}.owe b{font-size:1.6rem}
+.due{margin:.5rem 0 .9rem;color:var(--mute)}.due b{color:var(--ink)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:.6rem;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:.85rem;padding:.8rem 1rem;margin-bottom:.6rem;min-height:3.6rem}
+.row.out{opacity:.65}
+label,.lab{display:block;font-weight:700;margin:.85rem 0 .35rem}
+input,select{width:100%;min-height:3.1rem;border:2px solid var(--line);border-radius:.7rem;padding:0 .8rem;background:var(--card)}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--pine);outline-offset:2px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.seg button{min-height:3.1rem;border-radius:.7rem;border:2px solid var(--line);background:var(--card);font-weight:700}
+.seg button.on{background:var(--pine2);border-color:var(--pine);color:var(--pine)}
+.hint{margin:.6rem 0 0;font-size:.9rem;color:var(--soon);min-height:1.3rem}
+dl{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.9rem 0}
+dl div{background:var(--card);border:1px solid var(--line);border-radius:.7rem;padding:.6rem .75rem}
+dt{font-size:.85rem;color:var(--mute)}dd{margin:0;font-weight:700;font-size:1.05rem}
+ul{list-style:none;margin:0;padding:0}
+li.p{display:grid;grid-template-columns:1fr auto;gap:.1rem .6rem;padding:.75rem 0;border-top:1px solid var(--line)}
+li.p em{font-style:normal;font-size:.8rem;font-weight:700;border-radius:.5rem;padding:.1rem .5rem;justify-self:end}
+.GCash{background:var(--ok2);color:var(--ok)}.PayMaya{background:var(--pine2);color:var(--pine)}.Cash{background:var(--soon2);color:var(--soon)}
+details{background:var(--card);border:1px solid var(--line);border-radius:.85rem;margin-bottom:.6rem;padding:0 1rem}
+summary{display:flex;justify-content:space-between;min-height:3.4rem;align-items:center;font-weight:700;cursor:pointer}
+details ul{padding-bottom:.4rem}
+.yr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}.yr button{width:3.2rem;height:3.2rem;border-radius:50%;border:2px solid var(--line);background:var(--card);font-size:1.5rem}
+#nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1.2fr 1fr 1fr;padding:.35rem .45rem calc(.45rem + env(safe-area-inset-bottom,0px));z-index:5;max-width:560px;margin:0 auto}
+#nav button{background:none;border:0;padding:0;white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:.1rem;font-size:.8rem;font-weight:700;color:var(--mute);min-height:3.2rem}
+#nav button.on{color:var(--pine)}#nav svg{width:1.45rem;height:1.45rem;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#nav .fab{color:var(--ink)}#nav .fab i{width:3.3rem;height:3.3rem;border-radius:50%;background:var(--pine);color:var(--onp);display:grid;place-items:center;margin-top:-1.7rem;border:4px solid var(--card)}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:9}#ov.on{display:flex}
+.sh{background:var(--bg);width:100%;max-width:560px;max-height:94%;overflow:auto;border-radius:1.4rem 1.4rem 0 0;padding:1.1rem 1rem calc(1.2rem + env(safe-area-inset-bottom,0px));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}@media(prefers-reduced-motion:reduce){.sh{animation:none}}
+.sh .btn+.btn{margin-top:.6rem}
+.done{text-align:center}.done .tick{width:4.6rem;height:4.6rem;margin:.3rem auto .7rem;border-radius:50%;background:var(--pine);color:var(--onp);display:grid;place-items:center;font-size:2.5rem}
+#toast{position:fixed;left:50%;bottom:6.5rem;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:.7rem 1rem;border-radius:.7rem;z-index:20;display:none;max-width:90%;text-align:center}
+.demo{background:var(--soon2);color:var(--soon);border-radius:.7rem;padding:.6rem .8rem;margin-bottom:.8rem;font-size:.9rem}
+.good{background:var(--pine2);color:var(--pine);border-radius:1rem;padding:1rem;font-weight:700;font-size:1.15rem}
+#sc-i{max-width:100%;max-height:170px;border-radius:.6rem;margin-top:.6rem;border:1px solid var(--line)}.up{background:var(--pine2);border-radius:1rem;padding:.7rem;margin-bottom:.2rem}.up p{margin-top:.5rem}
+.set{background:var(--card);border:1px solid var(--line);border-radius:1rem;padding:1rem;margin-bottom:.8rem}
+.set p{margin:.35rem 0 .8rem}
+.tog{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:3.4rem;border-radius:.8rem;border:2px solid var(--line);background:var(--card);padding:0 .5rem 0 1rem;font-weight:700;font-size:1.1rem}
+.tog i{width:3.4rem;height:2rem;border-radius:99px;background:var(--line);position:relative;flex:none}
+.tog i:after{content:"";position:absolute;top:.2rem;left:.2rem;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--card);transition:left .15s}
+.tog.on{border-color:var(--late);color:var(--late)}.tog.on i{background:var(--late)}.tog.on i:after{left:1.6rem}
+.leg p{display:flex;gap:.6rem;align-items:center;margin:.5rem 0}
+.brand{display:flex;align-items:center;gap:.45rem;font-weight:700;color:var(--pine);margin-bottom:.4rem}.brand svg{width:1.8rem;height:1.8rem;flex:none}
+.who{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.2rem 0;border-top:1px solid var(--line);font-weight:700}
+.who .lnk{font-weight:700}
+.hist li{display:flex;justify-content:space-between;gap:.6rem;padding:.5rem 0;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div id="app"><div class="hd" id="hd"></div><main id="main"></main></div>
+<nav id="nav"></nav><div id="ov"></div><div id="toast" role="status"></div>
+<script>
+const DAY=864e5;
+const pd=s=>{const[a,b,c]=s.split('-').map(Number);return Date.UTC(a,b-1,c)/DAY};
+function edate(s,n){
+ const[y,m,d]=s.split('-').map(Number),t=y*12+m-1+n,Y=Math.floor(t/12),M=t%12,L=new Date(Date.UTC(Y,M+1,0)).getUTCDate();
+ return Y+'-'+String(M+1).padStart(2,'0')+'-'+String(Math.min(d,L)).padStart(2,'0');
+}
+function rentAt(t,chg,d){
+ let r=+t.rent||0,best='';
+ for(const c of chg){if(c.tenant===t.name&&c.date<=d&&c.date>=best){best=c.date;r=+c.rent||0}}
+ return r;
+}
+function calc(t,pays,chg,today,warn){
+ let paid=0,last='';
+ for(const p of pays){if(p.tenant===t.name){paid+=+p.amount||0;if(p.date>last)last=p.date}}
+ const out=t.status==='Moved Out',rentNow=rentAt(t,chg,today);
+ if(!t.first)return{paid,last,months:0,next:'',days:9999,owes:0,nextAmt:rentNow,rentNow,status:out?'out':'ok'};
+ let cum=0,dueSoFar=0,m=-1,next='',nextAmt=0;
+ for(let k=0;k<1500;k++){
+  const d=edate(t.first,k);
+  cum+=rentAt(t,chg,d);
+  if(d<=today)dueSoFar=cum;
+  if(m<0&&cum>paid){m=k;next=d;nextAmt=cum-paid}
+  if(m>=0&&d>today)break;
+ }
+ if(m<0){m=1500;next=edate(t.first,1500);nextAmt=rentNow}
+ const days=pd(next)-pd(today),owes=Math.max(0,dueSoFar-paid);
+ const status=out?'out':days<0?'late':days===0?'today':days<=warn?'soon':'ok';
+ return{paid,last,months:m,next,days,owes,nextAmt,rentNow,status};
+}
+const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+function parseReceipt(text,names){
+ const L=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean),R={},low=text.toLowerCase();
+ const g=(low.match(/g\s*cash/g)||[]).length,my=(low.match(/maya/g)||[]).length;R.method=g>=my&&g?'GCash':my?'PayMaya':'';
+ const num=s=>{const m=s.match(/(\d{1,3}(?:,\d{3})+|\d+)\.\d{2}/);return m?parseFloat(m[0].replace(/,/g,'')):0};
+ for(const k of ['total amount sent','amount sent','total amount','amount','total','sent','paid','php','\u20B1']){const l=L.find(s=>s.toLowerCase().includes(k)&&!/fee/i.test(s)&&num(s)>0);if(l){R.amount=num(l);break}}
+ if(!R.amount){const a=(text.match(/(\d{1,3}(?:,\d{3})+|\d+)\.\d{2}/g)||[]).map(x=>parseFloat(x.replace(/,/g,'')));if(a.length)R.amount=Math.max(...a)}
+ for(let i=0;i<L.length&&!R.ref;i++){
+  const m=L[i].match(/\bref(?:erence)?\.?\s*(?:no\.?|number|id|#)?\s*[:.]?\s*(.*)$/i);if(!m)continue;
+  let tk=(m[1]||'').split(/\s+/).filter(Boolean);if(!tk.length&&L[i+1])tk=L[i+1].split(/\s+/);if(!tk.length)continue;
+  let r=tk[0];if(/^\d+$/.test(r))for(let j=1;j<tk.length&&/^\d+$/.test(tk[j])&&r.length<12;j++)r+=tk[j];
+  r=r.replace(/[^A-Za-z0-9]/g,'');if(r.length>=6&&/\d/.test(r))R.ref=r;
+ }
+ let m,y,mo,d;
+ if(m=text.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?\s*,?\s+(20\d\d)\b/i)){mo=MON[m[1].toLowerCase()];d=+m[2];y=+m[3]}
+ else if(m=text.match(/\b(20\d\d)-(\d\d)-(\d\d)\b/)){y=+m[1];mo=+m[2];d=+m[3]}
+ else if(m=text.match(/\b(\d{1,2})\/(\d{1,2})\/(20\d\d)\b/)){y=+m[3];mo=+m[1];d=+m[2];if(mo>12)[mo,d]=[d,mo]}
+ if(y&&mo>=1&&mo<=12&&d>=1&&d<=new Date(Date.UTC(y,mo,0)).getUTCDate())R.date=y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+ const hit=(names||[]).filter(n=>n&&low.includes(n.toLowerCase()));if(hit.length===1)R.tenant=hit[0];
+ return R;
+}
+const CFG=window.APP_CONFIG||{},demo=!CFG.API_URL,TZ=CFG.TIMEZONE||'Asia/Manila';
+const $=s=>document.querySelector(s);
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'\u20B1'+Math.round(n).toLocaleString('en-US');
+const fd=(s,o)=>s?new Date(s+'T00:00:00Z').toLocaleDateString('en-US',Object.assign({timeZone:'UTC'},o||{month:'short',day:'numeric',year:'numeric'})):'';
+const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const iso=n=>new Date(n*DAY).toISOString().slice(0,10);
+const S={tenants:[],payments:[],changes:[],owners:[],apts:[],settings:{allowDelete:false,warnDays:7},view:'home',id:null,year:+today().slice(0,4),hf:'',hc:'',q:'',loading:true,err:''};
+let METHOD=ls.get('rt_m')||'GCash',SC=0;
+document.documentElement.dataset.ts=ls.get('rt_ts')||'0';
+
+function seed(){
+ const T=today(),D={n:0,t:[],p:[],c:[],o:['Mama','Papa'],s:{allowDelete:false,warnDays:7}},ms=['GCash','PayMaya','Cash'];
+ [['Ana Reyes','Bldg A - Unit 1','0917 111 1111',8000,10,24],['Ben Cruz','Bldg A - Unit 2','0918 222 2222',9500,9,3],['Carla Lim','Bldg B - Unit 1','0919 333 3333',7000,5,-30],['Dan Torres','Bldg B - Unit 1','0920 444 4444',6000,17,0],['Eve Ramos','Bldg A - Unit 1','0921 555 5555',5500,6,12]].forEach((x,i)=>{
+  const first=edate(iso(pd(T)+x[5]),-x[4]);
+  D.t.push({row:++D.n,name:x[0],apt:x[1],phone:x[2],rent:x[3],first,status:'Active',notes:''});
+  for(let k=0;k<x[4];k++)D.p.push({row:++D.n,date:edate(first,k),tenant:x[0],amount:x[3],method:ms[(i+k)%3],ref:'',by:D.o[k%2],notes:''});
+ });
+ return D;
+}
+let D=null;try{D=JSON.parse(ls.get('rt_demo')||'null')}catch(e){}
+D=D||seed();D.c=D.c||[];D.s=D.s||{allowDelete:false,warnDays:7};
+const keep=()=>ls.set('rt_demo',JSON.stringify(D));
+function local(a,q){
+ if(a==='all')return JSON.parse(JSON.stringify({tenants:D.t,payments:D.p,changes:D.c,settings:D.s,owners:D.o,apts:[...new Set(D.t.map(t=>t.apt).filter(Boolean))]}));
+ if(a==='addPayment')D.p.push({row:++D.n,date:q.date,tenant:q.tenant,amount:+q.amount,method:q.method,ref:q.ref||'',by:q.by||'',notes:q.notes||''});
+ if(a==='deletePayment'){if(!D.s.allowDelete)throw new Error('Removing payments is switched off in Settings');D.p=D.p.filter(p=>p.row!=q.row)}
+ if(a==='changeRent'){
+  const same=D.c.find(c=>c.tenant===q.tenant&&c.date===q.date);
+  if(same)same.rent=+q.rent;else D.c.push({row:++D.n,date:q.date,tenant:q.tenant,rent:+q.rent,note:q.note||''});
+ }
+ if(a==='addCollector'&&!D.o.includes(q.name))D.o.push(q.name);
+ if(a==='removeCollector')D.o=D.o.filter(n=>n!==q.name);
+ if(a==='setSetting')D.s[q.key]=q.key==='warnDays'?+q.value:!!q.value;
+ if(a==='saveTenant'){
+  let t=q.row&&D.t.find(x=>x.row==q.row);
+  if(t){
+   D.p.forEach(p=>{if(p.tenant===t.name)p.tenant=q.name});
+   D.c.forEach(c=>{if(c.tenant===t.name)c.tenant=q.name});
+   Object.assign(t,{name:q.name,apt:q.apt,phone:q.phone,first:q.first,status:q.status,notes:q.notes});
+  }else{
+   t={row:++D.n};D.t.push(t);
+   Object.assign(t,{name:q.name,apt:q.apt,phone:q.phone,rent:+q.rent,first:q.first,status:q.status,notes:q.notes});
+  }
+ }
+ keep();return{};
+}
+async function api(a,q={}){
+ if(demo)return local(a,q);
+ const r=await fetch(CFG.API_URL,{method:'POST',body:JSON.stringify(Object.assign({},q,{action:a,pin:ls.get('rt_pin')||''}))});
+ const j=await r.json();if(!j.ok)throw new Error(j.error);return j.data;
+}
+
+const LOGO=`<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="11" fill="var(--pine)"/><path d="M17 37V11h10.2c5.2 0 8.3 2.6 8.3 6.9 0 3.3-1.9 5.6-5 6.5L36.4 37h-5.6l-5.3-11.2h-4.1V37zm4.4-21.8v6.9h5.3c2.4 0 3.8-1.2 3.8-3.4s-1.4-3.5-3.8-3.5z" fill="var(--onp)" fill-rule="evenodd"/></svg>`;
+const WARN=()=>S.settings.warnDays||7;
+const rows=()=>S.tenants.map(t=>({t,c:calc(t,S.payments,S.changes,today(),WARN())}));
+const activeRows=()=>rows().filter(r=>r.t.status!=='Moved Out');
+const bigTxt=c=>c.status==='late'?[-c.days,c.days===-1?'day late':'days late']:c.status==='today'?['Today','rent due']:[c.days,c.days===1?'day left':'days left'];
+const stTxt=c=>({late:-c.days+(c.days===-1?' day late':' days late'),today:'Due today',soon:'Due in '+c.days+(c.days===1?' day':' days'),ok:'Next '+fd(c.next,{month:'short',day:'numeric'}),out:'Moved out'}[c.status]);
+const ic={home:'<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',ppl:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',his:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',add:'<path d="M12 5v14M5 12h14"/>'};
+function nav(){
+ const on=v=>S.view===v||(v==='tenants'&&S.view==='tenant');
+ $('#nav').innerHTML=[['home','Today','home'],['pay','Add payment','add'],['tenants','Tenants','ppl'],['history','History','his']].map(([v,l,i])=>
+  v==='pay'?`<button class="fab" data-a="pay"><i><svg viewBox="0 0 24 24" style="stroke-width:3">${ic.add}</svg></i>${l}</button>`
+  :`<button class="${on(v)?'on':''}" data-a="go" data-v="${v}"><svg viewBox="0 0 24 24">${ic[i]}</svg>${l}</button>`).join('');
+}
+function card({t,c}){
+ const[b,s]=bigTxt(c);
+ const line=c.owes>0
+  ?`<p class="owe">Owes <b>${money(c.owes)}</b></p><p class="due">${c.status==='today'?'Rent is due <b>today</b>':'Unpaid since <b>'+fd(c.next)+'</b>'}</p>`
+  :`<p class="due">Next rent <b>${money(c.nextAmt)}</b> on <b>${fd(c.next)}</b></p>`;
+ return`<article class="c ${c.status}"><div class="top"><div><h3>${esc(t.name)}</h3><p class="mute">${esc(t.apt)}</p></div><div class="big"><b>${b}</b><span>${s}</span></div></div>${line}<button class="btn ${c.owes>0?'':'ghost'}" data-a="pay" data-id="${t.row}">Record payment</button></article>`;
+}
+function compact({t,c}){
+ return`<button class="row" data-a="open" data-id="${t.row}"><span><b>${esc(t.name)}</b><br><span class="mute">${esc(t.apt)}</span></span><span class="chip ok">Next ${fd(c.next,{month:'short',day:'numeric'})}</span></button>`;
+}
+function pli(p,who){
+ const del=!who&&S.settings.allowDelete?`<button class="lnk" style="grid-column:1/3;justify-self:start;color:var(--late)" data-a="delp" data-id="${p.row}">Remove this payment</button>`:'';
+ return`<li class="p"><span><b>${fd(p.date,{weekday:'short',month:'short',day:'numeric',year:who?undefined:'numeric'})}</b>${who?' '+esc(p.tenant):''}</span><b>${money(p.amount)}</b><span class="mute">${p.by?'Received by '+esc(p.by):''}${p.ref?' Ref '+esc(p.ref):''}${p.notes?' '+esc(p.notes):''}</span><em class="${p.method}">${p.method}</em>${del}</li>`;
+}
+const views={
+ home(){
+  const act=activeRows().sort((a,b)=>a.c.days-b.c.days||a.t.name.localeCompare(b.t.name));
+  const owe=act.filter(r=>r.c.owes>0&&(r.c.status==='late'||r.c.status==='today')),soon=act.filter(r=>r.c.status==='soon'&&!owe.includes(r)),ok=act.filter(r=>!owe.includes(r)&&!soon.includes(r));
+  const sec=(t,n,k)=>`<h2 class="sec">${t}<span class="${k}">${n}</span></h2>`;
+  if(!act.length)return'<p>No tenants yet. Tap Tenants, then Add tenant.</p>';
+  return`${demo?'<p class="demo">Practice mode: what you type stays on this phone only.</p>':''}
+  ${!owe.length?'<p class="good">Nobody owes anything today.</p>':''}
+  ${owe.length?sec('Owes money',owe.length,'late')+owe.map(card).join(''):''}
+  ${soon.length?sec('Due soon',soon.length,'soon')+soon.map(card).join(''):''}
+  ${ok.length?sec('All paid up',ok.length,'ok')+ok.map(compact).join(''):''}`;
+ },
+ tenants(){
+  const q=S.q.toLowerCase(),all=rows().filter(r=>(r.t.name+r.t.apt).toLowerCase().includes(q)).sort((a,b)=>a.t.name.localeCompare(b.t.name));
+  const cur=all.filter(r=>r.t.status!=='Moved Out'),old=all.filter(r=>r.t.status==='Moved Out');
+  const li=({t,c})=>`<button class="row ${c.status==='out'?'out':''}" data-a="open" data-id="${t.row}"><span><b>${esc(t.name)}</b><br><span class="mute">${esc(t.apt)}</span></span><span class="chip ${c.status}">${stTxt(c)}</span></button>`;
+  return`<button class="btn" data-a="editt">Add tenant</button><label for="q">Find a tenant</label><input id="q" value="${esc(S.q)}" placeholder="Type a name"><div style="height:.9rem"></div>${cur.map(li).join('')||'<p class="mute">No tenants found.</p>'}
+  ${old.length?`<details style="margin-top:1rem"><summary><span>Old tenants (moved out)</span><span>${old.length}</span></summary>${old.map(li).join('')}</details>`:''}`;
+ },
+ tenant(){
+  const t=S.tenants.find(x=>x.row==S.id);if(!t)return'';
+  const c=calc(t,S.payments,S.changes,today(),WARN()),out=t.status==='Moved Out',ps=S.payments.filter(p=>p.tenant===t.name).sort((a,b)=>b.date.localeCompare(a.date));
+  const rc=S.changes.filter(x=>x.tenant===t.name).sort((a,b)=>a.date.localeCompare(b.date));
+  const full={weekday:'short',month:'short',day:'numeric',year:'numeric'};
+  return`<button class="lnk" data-a="go" data-v="tenants">\u2039 All tenants</button>
+  <div class="c ${c.status}"><h3>${esc(t.name)}</h3><p class="mute">${esc(t.apt)}</p><p style="margin-top:.5rem"><span class="chip ${c.status}">${stTxt(c)}</span></p></div>
+  ${out?'':`<button class="btn" data-a="pay" data-id="${t.row}">Record payment</button><div style="height:.6rem"></div>`}
+  ${t.phone?`<a class="btn ghost" style="text-decoration:none;display:grid;place-items:center" href="tel:${esc(t.phone.replace(/\s/g,''))}">Call ${esc(t.phone)}</a>`:''}
+  <dl><div><dt>Next rent due</dt><dd>${out?'None':fd(c.next,full)}</dd></div><div><dt>Owes now</dt><dd>${c.owes>0?money(c.owes):'Nothing'}</dd></div><div><dt>Rent per month</dt><dd>${money(c.rentNow)}</dd></div><div><dt>Last payment</dt><dd>${c.last?fd(c.last):'None yet'}</dd></div><div><dt>Total paid</dt><dd>${money(c.paid)}</dd></div><div><dt>Months paid</dt><dd>${c.months}</dd></div></dl>
+  ${t.notes?`<p class="mute">Note: ${esc(t.notes)}</p>`:''}
+  ${out?'':'<button class="btn ghost" data-a="rent" data-id="'+t.row+'">Change rent</button>'}
+  <button class="lnk" data-a="editt" data-id="${t.row}">Edit details or mark as moved out</button>
+  ${rc.length?`<h2 style="margin-top:.9rem">Rent history</h2><ul class="hist"><li><span>${fd(t.first)}</span><b>${money(t.rent)}</b></li>${rc.map(x=>`<li><span>From ${fd(x.date)}</span><b>${money(x.rent)}</b></li>`).join('')}</ul>`:''}
+  <h2 style="margin-top:.9rem">Payment history</h2>${ps.length?'<ul>'+ps.map(p=>pli(p,0)).join('')+'</ul>':'<p class="mute">No payments yet.</p>'}`;
+ },
+ history(){
+  const y=String(S.year),ps0=S.payments.filter(p=>p.date.startsWith(y)&&(!S.hf||p.tenant===S.hf)),ps=ps0.filter(p=>!S.hc||p.by===S.hc);
+  const sum=f=>ps.filter(f).reduce((a,p)=>a+p.amount,0),M={};
+  ps.forEach(p=>(M[p.date.slice(0,7)]=M[p.date.slice(0,7)]||[]).push(p));
+  const who=[...new Set(S.owners.concat(S.payments.map(p=>p.by).filter(Boolean)))];
+  return`<div class="yr"><button data-a="yr" data-d="-1" aria-label="Earlier year">\u2039</button><h2 style="margin:0">${y}</h2><button data-a="yr" data-d="1" aria-label="Later year">\u203A</button></div>
+  <label for="hf">Show payments of</label><select id="hf"><option value="">Everyone</option>${S.tenants.map(t=>`<option ${S.hf===t.name?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
+  <label for="hc">Collected by</label><select id="hc"><option value="">Everyone</option>${who.map(n=>`<option ${S.hc===n?'selected':''}>${esc(n)}</option>`).join('')}</select>
+  <div class="hero" style="margin-top:1rem"><span>Received in ${y}${S.hc?' by '+esc(S.hc):''}</span><b>${money(sum(()=>1))}</b><div class="chips">${['GCash','PayMaya','Cash'].map(m=>`<span class="chip" style="background:var(--card);color:var(--ink)">${m} ${money(sum(p=>p.method===m))}</span>`).join('')}</div></div>
+  ${Object.keys(M).sort().reverse().map(k=>`<details><summary><span>${fd(k+'-01',{month:'long'})}</span><span>${money(M[k].reduce((a,p)=>a+p.amount,0))}</span></summary><ul>${M[k].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>pli(p,1)).join('')}</ul></details>`).join('')||`<p class="mute">No payments recorded in ${y}.</p>`}`;
+ },
+ settings(){
+  const on=S.settings.allowDelete,ts=ls.get('rt_ts')||'0';
+  return`<button class="lnk" data-a="go" data-v="home">\u2039 Back</button>
+  ${demo?'<p class="demo">Practice mode: nothing here goes to the Google Sheet.</p>':''}
+  <div class="set"><h3>Removing payments</h3><p class="mute">Off keeps every payment safe. Turn it on only to fix a mistake, then turn it off again.</p><button class="tog ${on?'on':''}" data-a="togdel" role="switch" aria-checked="${on}"><span>${on?'On - Remove buttons are showing':'Off'}</span><i></i></button></div>
+  <div class="set"><h3>Who collects rent</h3><p class="mute">These names show up under Who collected it? when you record a payment.</p>${S.owners.map(o=>`<div class="who"><span>${esc(o)}</span><button class="lnk" style="color:var(--late)" data-a="delcol" data-n="${esc(o)}">Remove</button></div>`).join('')||'<p class="mute">No names yet.</p>'}<label for="c-n">Add a person</label><input id="c-n" placeholder="Example: Auntie Rose" autocomplete="off"><div style="height:.6rem"></div><button class="btn" data-a="addcol">Add this person</button></div>
+  <div class="set"><h3>Warn me before rent is due</h3><p class="mute">Tenants due within this many days turn yellow.</p><select id="s-w" aria-label="Warning days">${[3,5,7,10,14].map(n=>`<option value="${n}" ${n===WARN()?'selected':''}>${n} days before</option>`).join('')}</select></div>
+  <div class="set"><h3>Text size</h3><p class="mute">Only changes this phone.</p><div class="seg">${[['0','Normal'],['1','Large'],['2','Extra large']].map(([v,l])=>`<button data-a="ts" data-v="${v}" class="${ts===v?'on':''}">${l}</button>`).join('')}</div></div>
+  <div class="set leg"><h3>What the colors mean</h3><p><span class="chip late">Red</span> Rent is late</p><p><span class="chip today">Orange</span> Rent is due today</p><p><span class="chip soon">Yellow</span> Due in ${WARN()} days or less</p><p><span class="chip ok">Blue</span> All good</p></div>
+  <button class="btn" data-a="reload">Refresh now</button><div style="height:.6rem"></div>${demo?'<button class="btn ghost" data-a="reset">Start practice again</button>':'<button class="btn ghost" data-a="signout">Sign out of this phone</button>'}`;
+ }
+};
+function render(){
+ const T={home:'Today',tenants:'Tenants',history:'History',tenant:'Tenant',settings:'Settings'}[S.view];
+ $('#hd').innerHTML=`<div><div class="brand">${LOGO}<span>Rentbook</span></div><h1>${T}</h1><p class="mute">${new Date().toLocaleDateString('en-US',{timeZone:TZ,weekday:'long',month:'long',day:'numeric',year:'numeric'})}</p></div>${S.view==='settings'?'':'<button class="lnk" data-a="settings">Settings</button>'}`;
+ $('#main').innerHTML=S.loading?'<p class="mute">Loading...</p>':S.err?`<div class="c late"><h3>Can't reach the sheet</h3><p class="mute">${esc(S.err)}</p><div style="height:.8rem"></div><button class="btn" data-a="reload">Try again</button></div>`:views[S.view]();
+ nav();
+}
+function sheet(h,lock){const o=$('#ov');o.innerHTML='<div class="sh">'+h+'</div>';o.dataset.lock=lock?1:'';o.classList.add('on')}
+const closeSheet=()=>$('#ov').classList.remove('on');
+function say(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(say.t);say.t=setTimeout(()=>t.style.display='none',3500)}
+function payForm(id){
+ const act=S.tenants.filter(t=>t.status!=='Moved Out');if(!act.length)return say('Add a tenant first.');
+ const by=ls.get('rt_by')||'';
+ SC=0;
+ sheet(`<h2>Record payment</h2><div class="up"><label class="btn ghost" for="f-img" style="display:grid;place-items:center;margin:0;background:var(--card)">Upload payment screenshot</label><input id="f-img" type="file" accept="image/*" hidden><p class="mute" id="sc-s">From GCash or PayMaya. The form fills itself in.</p><img id="sc-i" hidden alt="Your screenshot"></div><label for="f-t">Who paid?</label><select id="f-t">${act.map(t=>`<option value="${t.row}" ${t.row==id?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
+ <label for="f-a">Amount (\u20B1)</label><input id="f-a" type="number" inputmode="decimal" min="0"><p class="hint" id="f-h"></p>
+ <label for="f-d">Date paid</label><input id="f-d" type="date" value="${today()}">
+ <div class="lab">How did they pay?</div><div class="seg">${['GCash','PayMaya','Cash'].map(m=>`<button data-a="method" data-v="${m}" class="${m===METHOD?'on':''}">${m}</button>`).join('')}</div>
+ <div id="f-rw"><label for="f-r">GCash / PayMaya reference number</label><input id="f-r" autocomplete="off"></div>
+ <label for="f-b">Who collected it?</label><select id="f-b">${(S.owners.length?S.owners:['Family']).map(o=>`<option ${o===by?'selected':''}>${esc(o)}</option>`).join('')}</select>
+ <label for="f-n">Note (optional)</label><input id="f-n"><div style="height:1.1rem"></div><button class="btn" data-a="savepay">Save payment</button><button class="btn ghost" data-a="close">Cancel</button>`);
+ payUpd(1);
+}
+function payUpd(fill){
+ const t=S.tenants.find(x=>x.row==$('#f-t').value);if(!t)return;
+ const c=calc(t,S.payments,S.changes,today(),WARN()),target=c.owes>0?c.owes:c.nextAmt;
+ if(fill)$('#f-a').value=target||c.rentNow;
+ const a=+$('#f-a').value;
+ $('#f-h').textContent=c.owes>0
+  ?(a>0&&a<c.owes?`They owe ${money(c.owes)}. The other ${money(c.owes-a)} will still show as owed.`:`They owe ${money(c.owes)}.`)
+  :(a>0&&a<c.nextAmt?`Less than ${money(c.nextAmt)}. The rest will still show as owed.`:`Next rent due ${fd(c.next)}.`);
+ $('#f-rw').style.display=METHOD==='Cash'?'none':'block';
+}
+function loadOCR(){return window.Tesseract?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';s.onload=ok;s.onerror=()=>no(new Error('offline'));document.head.appendChild(s)})}
+async function scan(file){
+ const st=$('#sc-s'),im=$('#sc-i');if(!file)return;
+ if(window.URL&&URL.createObjectURL){im.src=URL.createObjectURL(file);im.hidden=false}
+ st.textContent='Getting ready... the first time takes a little longer.';
+ try{
+  await loadOCR();
+  const r=await Tesseract.recognize(file,'eng',{logger:m=>{if(m.status==='recognizing text')st.textContent='Reading the picture... '+Math.round(m.progress*100)+'%'}});
+  applyScan(parseReceipt(r.data.text,S.tenants.map(t=>t.name)));
+ }catch(e){st.textContent='Could not read the picture here. Please type the details below.'}
+}
+function applyScan(R){
+ SC=1;const t=S.tenants.find(x=>x.name===R.tenant);if(t&&t.status!=='Moved Out')$('#f-t').value=t.row;
+ METHOD=R.method||(METHOD==='Cash'?'GCash':METHOD);
+ document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.v===METHOD));
+ if(R.amount)$('#f-a').value=R.amount;if(R.date)$('#f-d').value=R.date;if(R.ref)$('#f-r').value=R.ref;payUpd(0);
+ const miss=[['amount','amount'],['date','date'],['ref','reference number']].filter(x=>!R[x[0]]).map(x=>x[1]);
+ $('#sc-s').textContent=(miss.length?'Could not read the '+miss.join(' and ')+'. Please type it. ':'')+'Please check everything below before saving.';
+}
+async function savePay(el){
+ const t=S.tenants.find(x=>x.row==$('#f-t').value),a=+$('#f-a').value,d=$('#f-d').value;
+ if(!t||!(a>0)||!d)return say('Please type the amount and the date.');
+ const rf=METHOD==='Cash'?'':$('#f-r').value.trim(),dup=rf&&S.payments.find(p=>p.ref===rf);
+ if(dup)return say('This reference number was already saved ('+dup.tenant+', '+fd(dup.date)+'). It looks like a duplicate.');
+ el.disabled=true;el.textContent='Saving...';
+ try{
+  await api('addPayment',{date:d,tenant:t.name,amount:a,method:METHOD,ref:rf,by:$('#f-b').value,notes:$('#f-n').value.trim()});
+  ls.set('rt_by',$('#f-b').value);ls.set('rt_m',METHOD);await load();
+  const c=calc(t,S.payments,S.changes,today(),WARN());
+  sheet(`<div class="done"><div class="tick">\u2713</div><h2>Saved</h2><p>${esc(t.name)} paid ${money(a)} by ${METHOD}.</p><p class="mute" style="margin:.5rem 0 1.1rem">${c.owes>0?'Still owes '+money(c.owes)+'.':'Next rent due '+fd(c.next)+'.'}</p><button class="btn" data-a="close">Done</button></div>`);
+ }catch(e){el.disabled=false;el.textContent='Save payment';say('Not saved: '+e.message)}
+}
+function tForm(id){
+ const t=S.tenants.find(x=>x.row==id)||{status:'Active',first:today()};
+ sheet(`<h2>${id?'Edit tenant':'Add tenant'}</h2><label for="t-n">Name</label><input id="t-n" value="${esc(t.name)}"><label for="t-a">Apartment / unit</label><input id="t-a" list="al" value="${esc(t.apt)}" placeholder="Example: Bldg A - Unit 1"><datalist id="al">${S.apts.map(a=>`<option value="${esc(a)}">`).join('')}</datalist>
+ <label for="t-p">Phone</label><input id="t-p" type="tel" value="${esc(t.phone)}">
+ ${id?'':`<label for="t-r">Rent per month (\u20B1)</label><input id="t-r" type="number" inputmode="decimal">`}
+ <label for="t-f">First rent due date</label><input id="t-f" type="date" value="${esc(t.first)}"><p class="mute">Rent is due on the same day every month, counted from this date.</p>
+ ${id?'<p class="mute" style="margin-top:.6rem">To change the rent, close this and tap Change rent.</p>':''}
+ <label for="t-s">Is this person still renting?</label><select id="t-s"><option value="Active" ${t.status==='Active'?'selected':''}>Yes, still renting</option><option value="Moved Out" ${t.status==='Moved Out'?'selected':''}>No, moved out</option></select>
+ <label for="t-o">Note (optional)</label><input id="t-o" value="${esc(t.notes)}"><div style="height:1.1rem"></div><button class="btn" data-a="savet" data-id="${id||''}">Save tenant</button><button class="btn ghost" data-a="close">Cancel</button>`);
+}
+async function saveT(el){
+ const old=S.tenants.find(x=>x.row==(+el.dataset.id||0));
+ const q={row:+el.dataset.id||0,name:$('#t-n').value.trim(),apt:$('#t-a').value.trim(),phone:$('#t-p').value.trim(),rent:old?old.rent:+$('#t-r').value,first:$('#t-f').value,status:$('#t-s').value,notes:$('#t-o').value.trim()};
+ if(!q.name||!(q.rent>0)||!q.first)return say('Please type the name, rent and first due date.');
+ if(S.tenants.some(t=>t.name===q.name&&t.row!==q.row))return say('That name is already used. Add a last name or number.');
+ if(old&&old.status!=='Moved Out'&&q.status==='Moved Out'){
+  const c=calc(old,S.payments,S.changes,today(),WARN());
+  if(!confirm(c.owes>0?old.name+' still owes '+money(c.owes)+'. Mark as moved out anyway?':'Mark '+old.name+' as moved out? They will move to Old tenants.'))return;
+ }
+ el.disabled=true;el.textContent='Saving...';
+ try{await api('saveTenant',q);await load();closeSheet();say('Saved')}
+ catch(e){el.disabled=false;el.textContent='Save tenant';say('Not saved: '+e.message)}
+}
+function rentForm(id){
+ const t=S.tenants.find(x=>x.row==id);if(!t)return;
+ const c=calc(t,S.payments,S.changes,today(),WARN());
+ let k=0;while(k<1500&&edate(t.first,k)<=today())k++;
+ const up=edate(t.first,k);
+ sheet(`<h2>Change rent</h2><p><b>${esc(t.name)}</b> now pays <b>${money(c.rentNow)}</b> every month.</p>
+ <label for="r-n">New rent per month (\u20B1)</label><input id="r-n" type="number" inputmode="decimal" min="0">
+ <label for="r-d">New rent starts on</label><input id="r-d" type="date" value="${up}">
+ <p class="hint" id="r-h"></p>
+ <div style="height:1.1rem"></div><button class="btn" data-a="saverent" data-id="${t.row}">Save new rent</button><button class="btn ghost" data-a="close">Cancel</button>`);
+ rentHint();
+}
+function rentHint(){
+ const n=+$('#r-n').value,d=$('#r-d').value,h=$('#r-h');
+ if(!d){h.textContent='';return}
+ h.textContent=(n>0?`Rent due before ${fd(d)} stays the same. Rent due on or after ${fd(d)} will be ${money(n)}.`:`Rent due before ${fd(d)} stays the same.`)+(d<today()?' This date is in the past, so what the tenant owes may change.':'');
+}
+async function saveRent(el){
+ const t=S.tenants.find(x=>x.row==el.dataset.id),n=+$('#r-n').value,d=$('#r-d').value;
+ if(!t||!(n>0)||!d)return say('Please type the new rent and the date it starts.');
+ if(d<today()&&!confirm('This date is in the past. What '+t.name+' owes may change. Save anyway?'))return;
+ el.disabled=true;el.textContent='Saving...';
+ try{await api('changeRent',{tenant:t.name,date:d,rent:n});await load();closeSheet();say('Rent changed')}
+ catch(e){el.disabled=false;el.textContent='Save new rent';say('Not saved: '+e.message)}
+}
+async function toggleDelete(){
+ const next=!S.settings.allowDelete;
+ if(next&&!confirm('Turn on removing payments?\n\nA red Remove button will show next to each payment. Please turn it off again when you are done.'))return;
+ try{await api('setSetting',{key:'allowDelete',value:next});await load();say(next?'Removing payments is ON':'Removing payments is OFF')}
+ catch(e){say('Not changed: '+e.message)}
+}
+function askPin(m){sheet(`<h2>Family PIN</h2><p class="mute">${m||'Type the PIN once. This phone will remember it.'}</p><label for="pin">PIN</label><input id="pin" type="password" inputmode="numeric" autocomplete="off"><div style="height:1.1rem"></div><button class="btn" data-a="savepin">Open Rentbook</button>`,1)}
+async function load(){
+ S.err='';S.loading=!S.tenants.length;render();
+ try{Object.assign(S,await api('all'))}
+ catch(e){
+  if(e.message==='bad pin'){ls.set('rt_pin','');S.loading=false;render();return askPin('That PIN is not right. Try again.')}
+  S.err='Check your internet, then try again. ('+e.message+')';
+ }
+ S.loading=false;render();
+}
+const A={
+ go:e=>{S.view=e.dataset.v;S.id=null;render();scrollTo(0,0)},
+ open:e=>{S.view='tenant';S.id=+e.dataset.id;render();scrollTo(0,0)},
+ settings:()=>{S.view='settings';render();scrollTo(0,0)},
+ pay:e=>payForm(+e.dataset.id||null),close:closeSheet,
+ method:e=>{METHOD=e.dataset.v;document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b===e));payUpd()},
+ savepay:savePay,editt:e=>tForm(+e.dataset.id||0),savet:saveT,rent:e=>rentForm(+e.dataset.id),saverent:saveRent,togdel:toggleDelete,
+ addcol:async()=>{
+  const n=$('#c-n').value.trim();if(!n)return say('Please type a name.');
+  if(S.owners.includes(n))return say('That name is already on the list.');
+  try{await api('addCollector',{name:n});await load();say(n+' added')}catch(x){say('Not added: '+x.message)}
+ },
+ delcol:async e=>{
+  const n=e.dataset.n;
+  if(!confirm('Remove '+n+' from the list? Payments they already collected keep their name.'))return;
+  try{await api('removeCollector',{name:n});await load();say(n+' removed')}catch(x){say('Not removed: '+x.message)}
+ },
+ ts:e=>{ls.set('rt_ts',e.dataset.v);document.documentElement.dataset.ts=e.dataset.v;render()},
+ reload:()=>{closeSheet();load()},yr:e=>{S.year+=+e.dataset.d;render()},
+ delp:async e=>{
+  if(!confirm('Remove this payment? This cannot be undone.'))return;
+  try{await api('deletePayment',{row:+e.dataset.id});await load();say('Payment removed')}
+  catch(x){say('Not removed: '+x.message)}
+ },
+ reset:()=>{D=seed();keep();closeSheet();load()},
+ signout:()=>{ls.set('rt_pin','');location.reload()},
+ savepin:()=>{const v=$('#pin').value.trim();if(!v)return;ls.set('rt_pin',v);closeSheet();load()}
+};
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-a]');
+ if(el&&A[el.dataset.a])return A[el.dataset.a](el);
+ if(e.target.id==='ov'&&!e.target.dataset.lock)closeSheet();
+});
+document.addEventListener('input',e=>{
+ if(e.target.id==='q'){S.q=e.target.value;const p=e.target.selectionStart;render();const i=$('#q');i.focus();i.setSelectionRange(p,p)}
+ if(e.target.id==='f-a')payUpd();
+ if(e.target.id==='r-n'||e.target.id==='r-d')rentHint();
+});
+document.addEventListener('change',async e=>{
+ if(e.target.id==='hf'){S.hf=e.target.value;render()}
+ if(e.target.id==='hc'){S.hc=e.target.value;render()}
+ if(e.target.id==='f-t')payUpd(!SC);
+ if(e.target.id==='f-img')scan(e.target.files[0]);
+ if(e.target.id==='s-w'){
+  try{await api('setSetting',{key:'warnDays',value:+e.target.value});await load();say('Saved')}
+  catch(x){say('Not changed: '+x.message)}
+ }
+});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('#ov').classList.contains('on'))load()});
+(demo||ls.get('rt_pin'))?load():(render(),askPin());
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
