@@ -59,6 +59,7 @@ li.p em{font-style:normal;font-size:.8rem;font-weight:700;border-radius:.5rem;pa
 details{background:var(--card);border:1px solid var(--line);border-radius:.85rem;margin-bottom:.6rem;padding:0 1rem}
 summary{display:flex;justify-content:space-between;min-height:3.4rem;align-items:center;font-weight:700;cursor:pointer}
 details ul{padding-bottom:.4rem}
+details select{box-sizing:border-box;width:100%;max-width:100%}
 .yr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}.yr button{width:3.2rem;height:3.2rem;border-radius:50%;border:2px solid var(--line);background:var(--card);font-size:1.5rem}
 #nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1.2fr 1fr 1fr;padding:.35rem .45rem calc(.45rem + env(safe-area-inset-bottom,0px));z-index:5;max-width:560px;margin:0 auto}
 #nav button{background:none;border:0;padding:0;white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:.1rem;font-size:.8rem;font-weight:700;color:var(--mute);min-height:3.2rem}
@@ -81,6 +82,25 @@ details ul{padding-bottom:.4rem}
 .tog.on{border-color:var(--late);color:var(--late)}.tog.on i{background:var(--late)}.tog.on i:after{left:1.6rem}
 .tog.green.on{border-color:var(--pine);color:var(--pine)}.tog.green.on i{background:var(--pine)}.tog.green.on i:after{background:var(--onp)}
 .note{margin:.7rem 0 0;font-size:.95rem;color:var(--soon)}
+.seg.two{grid-template-columns:repeat(2,1fr)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:.22rem;margin:.6rem 0}
+.cal .wd{text-align:center;font-size:.75rem;font-weight:700;color:var(--mute);padding-bottom:.15rem}
+.dy{display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:3.5rem;padding:.3rem 0 .25rem;border:2px solid transparent;border-radius:.65rem;background:var(--card);font-weight:700;font-size:1rem;color:var(--ink)}
+.dy.e{background:transparent;border:0;pointer-events:none}
+.dy.td{border-color:var(--pine)}.dy.sel{background:var(--pine2);border-color:var(--pine);color:var(--pine)}
+.dots{display:flex;gap:.12rem;min-height:1.15rem}
+.dots i{font-style:normal;font-size:.68rem;font-weight:700;min-width:1.1rem;height:1.1rem;padding:0 .1rem;border-radius:99px;display:grid;place-items:center;line-height:1}
+.dots .pd{background:var(--pine);color:var(--onp)}.dots .du{border:2px solid var(--sc);color:var(--sc);background:var(--card)}
+.pdue{--sc:var(--mute);--sb:var(--line)}
+.jump{display:grid;grid-template-columns:1.3fr 1fr auto;gap:.5rem;align-items:center;margin-bottom:.8rem}
+.dd{display:grid;grid-template-columns:1fr auto;gap:.15rem .6rem;align-items:center;padding:.75rem 0;border-top:1px solid var(--line)}
+.dd .btn{grid-column:1/3;min-height:2.8rem;margin-top:.4rem}
+.dot{display:inline-block;width:.8rem;height:.8rem;border-radius:50%;flex:none}
+.dot.g{background:var(--pine)}.dot.r{background:var(--late)}.dot.b{background:var(--ok)}.dot.k{background:var(--mute)}
+.dy .dots{gap:.22rem;min-height:.9rem;align-items:center}
+.key{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;margin:.2rem 0 1rem;font-weight:700}.key span{display:inline-flex;align-items:center;gap:.4rem}
+.ev{display:flex;gap:.75rem;align-items:flex-start;padding:.85rem 0;border-top:1px solid var(--line)}.ev .dot{margin-top:.45rem}.ev p{margin:0}.ev .btn{margin-top:.6rem;min-height:2.9rem}
+.mon{background:var(--pine2);color:var(--pine);border-radius:1rem;padding:.8rem 1rem;font-weight:700;font-size:1.1rem;margin:0 0 .8rem}
 .leg p{display:flex;gap:.6rem;align-items:center;margin:.5rem 0}
 .brand{display:flex;align-items:center;gap:.45rem;font-weight:700;color:var(--pine);margin-bottom:.4rem}.brand svg{width:1.8rem;height:1.8rem;flex:none}
 .who{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.2rem 0;border-top:1px solid var(--line);font-weight:700}
@@ -139,6 +159,7 @@ function parseReceipt(text,names){
  else if(m=text.match(/\b(20\d\d)-(\d\d)-(\d\d)\b/)){y=+m[1];mo=+m[2];d=+m[3]}
  else if(m=text.match(/\b(\d{1,2})\/(\d{1,2})\/(20\d\d)\b/)){y=+m[3];mo=+m[1];d=+m[2];if(mo>12)[mo,d]=[d,mo]}
  if(y&&mo>=1&&mo<=12&&d>=1&&d<=new Date(Date.UTC(y,mo,0)).getUTCDate())R.date=y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+ if(m=text.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\s*([AaPp])\.?[Mm]\b/)){let h=+m[1];const ap=m[3].toLowerCase();if(h>=1&&h<=12&&+m[2]<60){if(ap==='p'&&h<12)h+=12;if(ap==='a'&&h===12)h=0;R.time=String(h).padStart(2,'0')+':'+m[2]}}
  const hit=(names||[]).filter(n=>n&&low.includes(n.toLowerCase()));if(hit.length===1)R.tenant=hit[0];
  return R;
 }
@@ -149,9 +170,13 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=n=>'\u20B1'+Math.round(n).toLocaleString('en-US');
 const fd=(s,o)=>s?new Date(s+'T00:00:00Z').toLocaleDateString('en-US',Object.assign({timeZone:'UTC'},o||{month:'short',day:'numeric',year:'numeric'})):'';
 const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const ft=t=>{if(!t)return'';const[h,m]=t.split(':').map(Number);return(h%12||12)+':'+String(m).padStart(2,'0')+' '+(h<12?'AM':'PM')};
+const nowTime=()=>new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date());
+const byWhen=(a,b)=>b.date.localeCompare(a.date)||(b.time||'').localeCompare(a.time||'');
 const iso=n=>new Date(n*DAY).toISOString().slice(0,10);
-const S={tenants:[],payments:[],changes:[],owners:[],apts:[],settings:{allowDelete:false,warnDays:7,remindHour:8,stopAfter:30,pushReady:false},view:'home',id:null,year:+today().slice(0,4),hf:'',hc:'',q:'',loading:true,err:''};
+const S={tenants:[],payments:[],changes:[],owners:[],apts:[],settings:{allowDelete:false,warnDays:7,remindHour:8,stopAfter:30,pushReady:false},view:'home',id:null,year:+today().slice(0,4),hf:'',hc:'',q:'',loading:true,err:'',hv:'cal',cm:'',py:0};
 let METHOD=ls.get('rt_m')||'GCash',SC=0;
+S.cm=today().slice(0,7);
 document.documentElement.dataset.ts=ls.get('rt_ts')||'0';
 
 function seed(){
@@ -159,7 +184,7 @@ function seed(){
  [['Ana Reyes','Bldg A - Unit 1','0917 111 1111',8000,10,24],['Ben Cruz','Bldg A - Unit 2','0918 222 2222',9500,9,3],['Carla Lim','Bldg B - Unit 1','0919 333 3333',7000,5,-30],['Dan Torres','Bldg B - Unit 1','0920 444 4444',6000,17,0],['Eve Ramos','Bldg A - Unit 1','0921 555 5555',5500,6,12]].forEach((x,i)=>{
   const first=edate(iso(pd(T)+x[5]),-x[4]);
   D.t.push({row:++D.n,name:x[0],apt:x[1],phone:x[2],rent:x[3],first,status:'Active',notes:''});
-  for(let k=0;k<x[4];k++)D.p.push({row:++D.n,date:edate(first,k),tenant:x[0],amount:x[3],method:ms[(i+k)%3],ref:'',by:D.o[k%2],notes:''});
+  for(let k=0;k<x[4];k++)D.p.push({row:++D.n,date:edate(first,k),tenant:x[0],amount:x[3],method:ms[(i+k)%3],time:['09:15','10:40','14:05','16:30','11:20'][(i+k)%5],ref:'',by:D.o[k%2],notes:''});
  });
  return D;
 }
@@ -168,7 +193,7 @@ D=D||seed();D.c=D.c||[];D.s=D.s||{allowDelete:false,warnDays:7};
 const keep=()=>ls.set('rt_demo',JSON.stringify(D));
 function local(a,q){
  if(a==='all')return JSON.parse(JSON.stringify({tenants:D.t,payments:D.p,changes:D.c,settings:D.s,owners:D.o,apts:[...new Set(D.t.map(t=>t.apt).filter(Boolean))]}));
- if(a==='addPayment')D.p.push({row:++D.n,date:q.date,tenant:q.tenant,amount:+q.amount,method:q.method,ref:q.ref||'',by:q.by||'',notes:q.notes||''});
+ if(a==='addPayment')D.p.push({row:++D.n,date:q.date,time:q.time||'',tenant:q.tenant,amount:+q.amount,method:q.method,ref:q.ref||'',by:q.by||'',notes:q.notes||''});
  if(a==='deletePayment'){if(!D.s.allowDelete)throw new Error('Removing payments is switched off in Settings');D.p=D.p.filter(p=>p.row!=q.row)}
  if(a==='changeRent'){
   const same=D.c.find(c=>c.tenant===q.tenant&&c.date===q.date);
@@ -285,6 +310,80 @@ function pushCard(){
  return`<div class="set"><h3>Reminders on this phone</h3>${top}</div>${rules}`;
 }
 
+/* ---- History calendar ---- */
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const shiftYM=(ym,n)=>{const[y,m]=ym.split('-').map(Number),t=y*12+m-1+n;return Math.floor(t/12)+'-'+String(t%12+1).padStart(2,'0')};
+function paysOn(ym){
+ const o={};
+ S.payments.forEach(p=>{if(p.date.startsWith(ym)&&(!S.hf||p.tenant===S.hf)&&(!S.hc||p.by===S.hc))(o[p.date]=o[p.date]||[]).push(p)});
+ return o;
+}
+// Rent due dates inside month ym. A due date counts as paid when everything the tenant ever paid covers all rent up to that date.
+function dueMap(ym,T){
+ const map={};if(S.hc)return map;
+ const end=edate(ym+'-01',1);
+ for(const t of S.tenants){
+  if(!t.first||(S.hf&&t.name!==S.hf))continue;
+  const paid=S.payments.reduce((a,p)=>p.tenant===t.name?a+(+p.amount||0):a,0),out=t.status==='Moved Out';
+  let cum=0;
+  for(let k=0;k<1500;k++){
+   const d=edate(t.first,k);if(d>=end)break;
+   const amt=rentAt(t,S.changes,d);cum+=amt;
+   if(d.slice(0,7)!==ym)continue;
+   const ok=paid>=cum;if(out&&!ok)continue;
+   (map[d]=map[d]||[]).push({t,amt,owed:Math.max(0,Math.min(amt,cum-paid)),st:ok?'paid':d<T?'late':d===T?'today':'ok'});
+  }
+ }
+ return map;
+}
+function calFilters(){
+ const who=[...new Set(S.owners.concat(S.payments.map(p=>p.by).filter(Boolean)))];
+ return`<details data-fo ${S.hf||S.hc||S.fo?'open':''}><summary><span>Show only one person</span><span>${S.hf||S.hc?'On':''}</span></summary>
+ <label for="hf">Tenant</label><select id="hf"><option value="">Everyone</option>${S.tenants.map(t=>`<option ${S.hf===t.name?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
+ <label for="hc">Collected by</label><select id="hc"><option value="">Everyone</option>${who.map(n=>`<option ${S.hc===n?'selected':''}>${esc(n)}</option>`).join('')}</select><div style="height:.8rem"></div></details>`;
+}
+function histCal(){
+ const ym=S.cm,[Y,M]=ym.split('-').map(Number),T=today(),lead=new Date(Date.UTC(Y,M-1,1)).getUTCDay(),n=new Date(Date.UTC(Y,M,0)).getUTCDate();
+ const dues=dueMap(ym,T),pays=paysOn(ym);
+ let cells=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<span class="wd">${d}</span>`).join('')+'<span class="dy e"></span>'.repeat(lead);
+ for(let d=1;d<=n;d++){
+  const ds=ym+'-'+String(d).padStart(2,'0'),pp=pays[ds]||[],dd=dues[ds]||[];
+  const late=dd.some(x=>x.st==='late'),soon=dd.some(x=>x.st==='today'||x.st==='ok');
+  const lab=fd(ds,{weekday:'long',month:'long',day:'numeric'})+(pp.length?', money received':'')+(late?', rent not paid':'')+(soon?', rent coming up':'');
+  cells+=`<button class="dy ${ds===T?'td':''}" data-a="day" data-d="${ds}" aria-label="${lab}"><b>${d}</b><span class="dots">${pp.length?'<i class="dot g"></i>':''}${late?'<i class="dot r"></i>':''}${soon?'<i class="dot b"></i>':''}</span></button>`;
+ }
+ const tot=Object.values(pays).flat().reduce((a,p)=>a+p.amount,0),cur=ym===T.slice(0,7);
+ return`<div class="yr"><button data-a="cm" data-d="-1" aria-label="Earlier month">‹</button><h2 style="margin:0;text-align:center">${MONTHS[M-1]} ${Y}</h2><button data-a="cm" data-d="1" aria-label="Later month">›</button></div>
+ <div class="cal" role="group" aria-label="${MONTHS[M-1]} ${Y}">${cells}</div>
+ <div class="key"><span><i class="dot g"></i>Money received</span><span><i class="dot r"></i>Rent not paid</span><span><i class="dot b"></i>Rent coming up</span></div>
+ <p class="mon">Money received in ${MONTHS[M-1]}: ${money(tot)}</p>
+ <p class="mute" style="margin:0 0 .8rem">Tap any day to see what happened.</p>
+ <button class="btn ghost" data-a="pickmonth">Go to another month</button>
+ ${cur?'':'<div style="height:.6rem"></div><button class="btn ghost" data-a="cmtoday">Back to this month</button>'}
+ <div style="height:.4rem"></div><button class="lnk" data-a="hv" data-v="list">Show payments as a list</button>`;
+}
+function dayView(ds){
+ const T=today(),ym=ds.slice(0,7),pp=(paysOn(ym)[ds]||[]).slice().sort((a,b)=>(a.time||'99').localeCompare(b.time||'99')),dd=dueMap(ym,T)[ds]||[];
+ const pays=pp.map(p=>`<div class="ev"><i class="dot g"></i><div><p><b>${esc(p.tenant)}</b> paid <b>${money(p.amount)}</b></p><p class="mute">${p.method}${p.time?' at '+ft(p.time):''}${p.by?', received by '+esc(p.by):''}</p></div></div>`).join('');
+ const dues=dd.map(x=>{
+  const late=pd(T)-pd(ds),msg=x.st==='paid'?'Rent was paid':x.st==='late'?'Not paid yet ('+late+(late===1?' day':' days')+' late)':x.st==='today'?'Rent is due today':'Rent is due on this day';
+  const btn=x.st!=='paid'&&x.t.status!=='Moved Out'?`<button class="btn" data-a="pay" data-id="${x.t.row}">Record payment</button>`:'';
+  return`<div class="ev"><i class="dot ${x.st==='late'?'r':x.st==='paid'?'k':'b'}"></i><div><p><b>${esc(x.t.name)}</b>, rent ${money(x.st==='paid'?x.amt:(x.owed||x.amt))}</p><p class="mute">${msg}</p>${btn}</div></div>`}).join('');
+ sheet(`<h2>${fd(ds,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</h2>${pays}${dues}${!pays&&!dues?'<p class="mute">Nothing was paid or due on this day.</p>':''}<div style="height:1rem"></div><button class="btn ghost" data-a="close">Close</button>`);
+}
+function monthPicker(){
+ const M=+S.cm.slice(5),Y=+S.cm.slice(0,4);if(!S.py)S.py=Y;
+ sheet(`<h2>Go to a month</h2><div class="yr"><button data-a="pyr" data-d="-1" aria-label="Earlier year">‹</button><h2 style="margin:0">${S.py}</h2><button data-a="pyr" data-d="1" aria-label="Later year">›</button></div><div class="seg">${MONTHS.map((m,i)=>`<button data-a="pickm" data-m="${i+1}" class="${S.py===Y&&i+1===M?'on':''}">${m.slice(0,3)}</button>`).join('')}</div><div style="height:1rem"></div><button class="btn ghost" data-a="close">Cancel</button>`);
+}
+function histList(){
+ const y=String(S.year),ps=S.payments.filter(p=>p.date.startsWith(y)&&(!S.hf||p.tenant===S.hf)&&(!S.hc||p.by===S.hc));
+ const sum=f=>ps.filter(f).reduce((a,p)=>a+p.amount,0),M={};
+ ps.forEach(p=>(M[p.date.slice(0,7)]=M[p.date.slice(0,7)]||[]).push(p));
+ return`<div class="yr"><button data-a="yr" data-d="-1" aria-label="Earlier year">‹</button><h2 style="margin:0">${y}</h2><button data-a="yr" data-d="1" aria-label="Later year">›</button></div>
+ <div class="hero"><span>Received in ${y}${S.hc?' by '+esc(S.hc):''}</span><b>${money(sum(()=>1))}</b><div class="chips">${['GCash','PayMaya','Cash'].map(m=>`<span class="chip" style="background:var(--card);color:var(--ink)">${m} ${money(sum(p=>p.method===m))}</span>`).join('')}</div></div>
+ ${Object.keys(M).sort().reverse().map(k=>`<details><summary><span>${fd(k+'-01',{month:'long'})}</span><span>${money(M[k].reduce((a,p)=>a+p.amount,0))}</span></summary><ul>${M[k].sort(byWhen).map(p=>pli(p,1)).join('')}</ul></details>`).join('')||`<p class="mute">No payments recorded in ${y}.</p>`}`;
+}
+
 const LOGO=`<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="11" fill="var(--pine)"/><path d="M17 37V11h10.2c5.2 0 8.3 2.6 8.3 6.9 0 3.3-1.9 5.6-5 6.5L36.4 37h-5.6l-5.3-11.2h-4.1V37zm4.4-21.8v6.9h5.3c2.4 0 3.8-1.2 3.8-3.4s-1.4-3.5-3.8-3.5z" fill="var(--onp)" fill-rule="evenodd"/></svg>`;
 const WARN=()=>S.settings.warnDays||7;
 const rows=()=>S.tenants.map(t=>({t,c:calc(t,S.payments,S.changes,today(),WARN())}));
@@ -310,7 +409,7 @@ function compact({t,c}){
 }
 function pli(p,who){
  const del=!who&&S.settings.allowDelete?`<button class="lnk" style="grid-column:1/3;justify-self:start;color:var(--late)" data-a="delp" data-id="${p.row}">Remove this payment</button>`:'';
- return`<li class="p"><span><b>${fd(p.date,{weekday:'short',month:'short',day:'numeric',year:who?undefined:'numeric'})}</b>${who?' '+esc(p.tenant):''}</span><b>${money(p.amount)}</b><span class="mute">${p.by?'Received by '+esc(p.by):''}${p.ref?' Ref '+esc(p.ref):''}${p.notes?' '+esc(p.notes):''}</span><em class="${p.method}">${p.method}</em>${del}</li>`;
+ return`<li class="p"><span><b>${fd(p.date,{weekday:'short',month:'short',day:'numeric',year:who?undefined:'numeric'})}</b>${p.time?' <span class="mute">'+ft(p.time)+'</span>':''}${who?' '+esc(p.tenant):''}</span><b>${money(p.amount)}</b><span class="mute">${p.by?'Received by '+esc(p.by):''}${p.ref?' Ref '+esc(p.ref):''}${p.notes?' '+esc(p.notes):''}</span><em class="${p.method}">${p.method}</em>${del}</li>`;
 }
 const views={
  home(){
@@ -334,7 +433,7 @@ const views={
  },
  tenant(){
   const t=S.tenants.find(x=>x.row==S.id);if(!t)return'';
-  const c=calc(t,S.payments,S.changes,today(),WARN()),out=t.status==='Moved Out',ps=S.payments.filter(p=>p.tenant===t.name).sort((a,b)=>b.date.localeCompare(a.date));
+  const c=calc(t,S.payments,S.changes,today(),WARN()),out=t.status==='Moved Out',ps=S.payments.filter(p=>p.tenant===t.name).sort(byWhen);
   const rc=S.changes.filter(x=>x.tenant===t.name).sort((a,b)=>a.date.localeCompare(b.date));
   const full={weekday:'short',month:'short',day:'numeric',year:'numeric'};
   return`<button class="lnk" data-a="go" data-v="tenants">\u2039 All tenants</button>
@@ -349,15 +448,7 @@ const views={
   <h2 style="margin-top:.9rem">Payment history</h2>${ps.length?'<ul>'+ps.map(p=>pli(p,0)).join('')+'</ul>':'<p class="mute">No payments yet.</p>'}`;
  },
  history(){
-  const y=String(S.year),ps0=S.payments.filter(p=>p.date.startsWith(y)&&(!S.hf||p.tenant===S.hf)),ps=ps0.filter(p=>!S.hc||p.by===S.hc);
-  const sum=f=>ps.filter(f).reduce((a,p)=>a+p.amount,0),M={};
-  ps.forEach(p=>(M[p.date.slice(0,7)]=M[p.date.slice(0,7)]||[]).push(p));
-  const who=[...new Set(S.owners.concat(S.payments.map(p=>p.by).filter(Boolean)))];
-  return`<div class="yr"><button data-a="yr" data-d="-1" aria-label="Earlier year">\u2039</button><h2 style="margin:0">${y}</h2><button data-a="yr" data-d="1" aria-label="Later year">\u203A</button></div>
-  <label for="hf">Show payments of</label><select id="hf"><option value="">Everyone</option>${S.tenants.map(t=>`<option ${S.hf===t.name?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
-  <label for="hc">Collected by</label><select id="hc"><option value="">Everyone</option>${who.map(n=>`<option ${S.hc===n?'selected':''}>${esc(n)}</option>`).join('')}</select>
-  <div class="hero" style="margin-top:1rem"><span>Received in ${y}${S.hc?' by '+esc(S.hc):''}</span><b>${money(sum(()=>1))}</b><div class="chips">${['GCash','PayMaya','Cash'].map(m=>`<span class="chip" style="background:var(--card);color:var(--ink)">${m} ${money(sum(p=>p.method===m))}</span>`).join('')}</div></div>
-  ${Object.keys(M).sort().reverse().map(k=>`<details><summary><span>${fd(k+'-01',{month:'long'})}</span><span>${money(M[k].reduce((a,p)=>a+p.amount,0))}</span></summary><ul>${M[k].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>pli(p,1)).join('')}</ul></details>`).join('')||`<p class="mute">No payments recorded in ${y}.</p>`}`;
+  return S.hv==='list'?`<button class="lnk" data-a="hv" data-v="cal">\u2039 Back to calendar</button>${calFilters()}${histList()}`:histCal();
  },
  settings(){
   const on=S.settings.allowDelete,ts=ls.get('rt_ts')||'0';
@@ -388,6 +479,7 @@ function payForm(id){
  sheet(`<h2>Record payment</h2><div class="up"><label class="btn ghost" for="f-img" style="display:grid;place-items:center;margin:0;background:var(--card)">Upload payment screenshot</label><input id="f-img" type="file" accept="image/*" hidden><p class="mute" id="sc-s">From GCash or PayMaya. The form fills itself in.</p><img id="sc-i" hidden alt="Your screenshot"></div><label for="f-t">Who paid?</label><select id="f-t">${act.map(t=>`<option value="${t.row}" ${t.row==id?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
  <label for="f-a">Amount (\u20B1)</label><input id="f-a" type="number" inputmode="decimal" min="0"><p class="hint" id="f-h"></p>
  <label for="f-d">Date paid</label><input id="f-d" type="date" value="${today()}">
+ <label for="f-tm">Time paid (optional)</label><input id="f-tm" type="time" value="${nowTime()}">
  <div class="lab">How did they pay?</div><div class="seg">${['GCash','PayMaya','Cash'].map(m=>`<button data-a="method" data-v="${m}" class="${m===METHOD?'on':''}">${m}</button>`).join('')}</div>
  <div id="f-rw"><label for="f-r">GCash / PayMaya reference number</label><input id="f-r" autocomplete="off"></div>
  <label for="f-b">Who collected it?</label><select id="f-b">${(S.owners.length?S.owners:['Family']).map(o=>`<option ${o===by?'selected':''}>${esc(o)}</option>`).join('')}</select>
@@ -419,7 +511,7 @@ function applyScan(R){
  SC=1;const t=S.tenants.find(x=>x.name===R.tenant);if(t&&t.status!=='Moved Out')$('#f-t').value=t.row;
  METHOD=R.method||(METHOD==='Cash'?'GCash':METHOD);
  document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.v===METHOD));
- if(R.amount)$('#f-a').value=R.amount;if(R.date)$('#f-d').value=R.date;if(R.ref)$('#f-r').value=R.ref;payUpd(0);
+ if(R.amount)$('#f-a').value=R.amount;if(R.date)$('#f-d').value=R.date;if(R.ref)$('#f-r').value=R.ref;if(R.time){$('#f-tm').value=R.time;$('#f-tm').dataset.t=1}payUpd(0);
  const miss=[['amount','amount'],['date','date'],['ref','reference number']].filter(x=>!R[x[0]]).map(x=>x[1]);
  $('#sc-s').textContent=(miss.length?'Could not read the '+miss.join(' and ')+'. Please type it. ':'')+'Please check everything below before saving.';
 }
@@ -430,10 +522,10 @@ async function savePay(el){
  if(dup)return say('This reference number was already saved ('+dup.tenant+', '+fd(dup.date)+'). It looks like a duplicate.');
  el.disabled=true;el.textContent='Saving...';
  try{
-  await api('addPayment',{date:d,tenant:t.name,amount:a,method:METHOD,ref:rf,by:$('#f-b').value,notes:$('#f-n').value.trim()});
+  await api('addPayment',{date:d,time:$('#f-tm').value,tenant:t.name,amount:a,method:METHOD,ref:rf,by:$('#f-b').value,notes:$('#f-n').value.trim()});
   ls.set('rt_by',$('#f-b').value);ls.set('rt_m',METHOD);await load();
   const c=calc(t,S.payments,S.changes,today(),WARN());
-  sheet(`<div class="done"><div class="tick">\u2713</div><h2>Saved</h2><p>${esc(t.name)} paid ${money(a)} by ${METHOD}.</p><p class="mute" style="margin:.5rem 0 1.1rem">${c.owes>0?'Still owes '+money(c.owes)+'.':'Next rent due '+fd(c.next)+'.'}</p><button class="btn" data-a="close">Done</button></div>`);
+  sheet(`<div class="done"><div class="tick">\u2713</div><h2>Saved</h2><p>${esc(t.name)} paid ${money(a)} by ${METHOD}${$('#f-tm')&&$('#f-tm').value?' at '+ft($('#f-tm').value):''}.</p><p class="mute" style="margin:.5rem 0 1.1rem">${c.owes>0?'Still owes '+money(c.owes)+'.':'Next rent due '+fd(c.next)+'.'}</p><button class="btn" data-a="close">Done</button></div>`);
  }catch(e){el.disabled=false;el.textContent='Save payment';say('Not saved: '+e.message)}
 }
 function tForm(id){
@@ -517,6 +609,10 @@ const A={
   if(!confirm('Remove '+n+' from the list? Payments they already collected keep their name.'))return;
   try{await api('removeCollector',{name:n});await load();say(n+' removed')}catch(x){say('Not removed: '+x.message)}
  },
+ hv:e=>{S.hv=e.dataset.v;scrollTo(0,0);render()},
+ cm:e=>{S.cm=shiftYM(S.cm,+e.dataset.d);render()},cmtoday:()=>{S.cm=today().slice(0,7);render()},
+ day:e=>dayView(e.dataset.d),pickmonth:()=>{S.py=+S.cm.slice(0,4);monthPicker()},pyr:e=>{S.py+=+e.dataset.d;monthPicker()},
+ pickm:e=>{S.cm=S.py+'-'+String(e.dataset.m).padStart(2,'0');closeSheet();render();scrollTo(0,0)},
  pushtog:()=>PUSH.on()?pushOff():pushOn(),pushon:pushOn,pushtest:pushTest,nb:()=>{ls.set('rt_nb','1');render()},
  ts:e=>{ls.set('rt_ts',e.dataset.v);document.documentElement.dataset.ts=e.dataset.v;render()},
  reload:()=>{closeSheet();load()},yr:e=>{S.year+=+e.dataset.d;render()},
@@ -537,6 +633,8 @@ document.addEventListener('click',e=>{
 document.addEventListener('input',e=>{
  if(e.target.id==='q'){S.q=e.target.value;const p=e.target.selectionStart;render();const i=$('#q');i.focus();i.setSelectionRange(p,p)}
  if(e.target.id==='f-a')payUpd();
+ if(e.target.id==='f-tm')e.target.dataset.t=1;
+ if(e.target.id==='f-d'){const tm=$('#f-tm');if(tm&&!tm.dataset.t)tm.value=e.target.value===today()?nowTime():''}
  if(e.target.id==='r-n'||e.target.id==='r-d')rentHint();
 });
 document.addEventListener('change',async e=>{
@@ -553,6 +651,7 @@ document.addEventListener('change',async e=>{
   catch(x){say('Not changed: '+x.message)}
  }
 });
+document.addEventListener('toggle',e=>{if(e.target.dataset&&'fo' in e.target.dataset)S.fo=e.target.open},true);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('#ov').classList.contains('on'))load()});
 (demo||ls.get('rt_pin'))?load():(render(),askPin());
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});

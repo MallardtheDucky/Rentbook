@@ -1,4 +1,4 @@
-const C = 'rentbook-v3', F = ['./', 'index.html', 'config.js', 'push-config.js', 'manifest.webmanifest', 'icon-192.png'];
+const C = 'rentbook-v4', F = ['./', 'index.html', 'config.js', 'push-config.js', 'manifest.webmanifest', 'icon-192.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(C).then(c => Promise.all(F.map(u => c.add(u).catch(() => {}))))));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== C).map(x => caches.delete(x))))));
 self.addEventListener('fetch', e => {

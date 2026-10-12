@@ -2,6 +2,7 @@ const PIN = 'CHANGE-ME-1234';
 
 const TEN = {sheet: 'Tenants', r0: 5, r1: 34};
 const PAY = {sheet: 'Payments', r0: 5, r1: 1004};
+const TIMECOL = 11;   // Payments column K: Time Paid (added automatically)
 const APT = {sheet: 'Apartments', r0: 5, r1: 34};
 const OWN = {sheet: 'Owners', r0: 5, r1: 14};
 const CHG = {sheet: 'Rent Changes', r0: 5, r1: 504};
@@ -33,6 +34,35 @@ function emptyRow(t) {
   throw new Error('The sheet is full. Ask the family IT person to add rows.');
 }
 
+// "2:30 PM", "14:30", a time cell, or a fraction of a day -> "14:30". Empty / not understood -> "".
+function normTime_(v) {
+  const two = n => (n < 10 ? '0' : '') + n;
+  if (v === '' || v === null || v === undefined) return '';
+  if (v instanceof Date) { const t = Utilities.formatDate(v, Session.getScriptTimeZone(), 'HH:mm'); return t === '00:00' ? '' : t; }
+  if (typeof v === 'number') { if (!(v > 0 && v < 1)) return ''; const m = Math.round(v * 1440); return two(Math.floor(m / 60) % 24) + ':' + two(m % 60); }
+  const m = String(v).trim().match(/^(\d{1,2})(?:[:.](\d{2}))?\s*([ap])?\.?m?\.?$/i);
+  if (!m || (!m[2] && !m[3])) return '';
+  let h = +m[1]; const mi = m[2] ? +m[2] : 0, ap = (m[3] || '').toLowerCase();
+  if (ap === 'p' && h < 12) h += 12;
+  if (ap === 'a' && h === 12) h = 0;
+  if (h > 23 || mi > 59) return '';
+  return two(h) + ':' + two(mi);
+}
+function fmt12_(t) { const p = t.split(':').map(Number); return (p[0] % 12 || 12) + ':' + (p[1] < 10 ? '0' : '') + p[1] + ' ' + (p[0] < 12 ? 'AM' : 'PM'); }
+
+// Adds the "Time Paid" column (K) to the Payments tab the first time it is needed. Nothing existing is moved.
+function ensureTimeColumn_() {
+  const s = sh(PAY);
+  if (!s || String(s.getRange(4, TIMECOL).getValue()) !== '') return;
+  const n = PAY.r1 - PAY.r0 + 1;
+  s.getRange(3, TIMECOL).setValue('▼ TYPE HERE ▼');
+  s.getRange(4, TIMECOL).setValue('Time Paid\n(optional)');
+  s.getRange(3, 7, 2, 1).copyTo(s.getRange(3, TIMECOL, 2, 1), SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+  s.getRange(PAY.r0, 7, n, 1).copyTo(s.getRange(PAY.r0, TIMECOL, n, 1), SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+  s.getRange(PAY.r0, TIMECOL, n, 1).setNumberFormat('@');
+  s.setColumnWidth(TIMECOL, 110);
+}
+
 function readSettings() {
   const out = {allowDelete: false, warnDays: 7, remindHour: 8, stopAfter: 30, pushReady: pushReady_()};
   const s = sh(SET);
@@ -49,7 +79,7 @@ function readSettings() {
 function readAll_() {
   const tenants = [], payments = [], changes = [];
   grid(TEN, 7).forEach((r, i) => { if (r[0] !== '') tenants.push({row: TEN.r0 + i, name: String(r[0]), apt: String(r[1]), phone: String(r[2]), rent: Number(r[3]) || 0, first: dstr(r[4]), status: r[5] || 'Active', notes: String(r[6])}); });
-  grid(PAY, 7).forEach((r, i) => { if (r[0] !== '') payments.push({row: PAY.r0 + i, date: dstr(r[0]), tenant: String(r[1]), amount: Number(r[2]) || 0, method: String(r[3]), ref: String(r[4]), by: String(r[5]), notes: String(r[6])}); });
+  grid(PAY, TIMECOL).forEach((r, i) => { if (r[0] !== '') payments.push({row: PAY.r0 + i, date: dstr(r[0]), time: normTime_(r[TIMECOL - 1]), tenant: String(r[1]), amount: Number(r[2]) || 0, method: String(r[3]), ref: String(r[4]), by: String(r[5]), notes: String(r[6])}); });
   if (sh(CHG)) grid(CHG, 4).forEach((r, i) => { if (r[0] !== '' && r[1] !== '') changes.push({row: CHG.r0 + i, date: dstr(r[0]), tenant: String(r[1]), rent: Number(r[2]) || 0, note: String(r[3])}); });
   return {tenants, payments, changes};
 }
@@ -63,15 +93,20 @@ function handle(q) {
   if (q.action === 'addPayment') {
     if (!q.tenant || !(Number(q.amount) > 0) || !q.date) throw new Error('Missing tenant, amount or date');
     if (q.ref && grid(PAY, 7).some(r => String(r[4]) === String(q.ref))) throw new Error('This reference number is already saved (duplicate)');
+    let tm = '';
+    if (q.time) { tm = normTime_(q.time); if (!tm) throw new Error('Time not understood. Use a time like 2:30 PM'); }
+    ensureTimeColumn_();
     const row = emptyRow(PAY), s = sh(PAY);
     s.getRange(row, 5).setNumberFormat('@');
     s.getRange(row, 1, 1, 7).setValues([[dval(q.date), q.tenant, Number(q.amount), q.method || '', String(q.ref || ''), q.by || '', q.notes || '']]);
+    s.getRange(row, TIMECOL).setNumberFormat('@').setValue(tm ? fmt12_(tm) : '');
     return {row};
   }
   if (q.action === 'deletePayment') {
     if (!readSettings().allowDelete) throw new Error('Removing payments is switched off in Settings');
     if (q.row < PAY.r0 || q.row > PAY.r1) throw new Error('Bad row');
     sh(PAY).getRange(q.row, 1, 1, 7).clearContent();
+    sh(PAY).getRange(q.row, TIMECOL).clearContent();
     return {};
   }
   if (q.action === 'changeRent') {
@@ -293,6 +328,7 @@ function devRows_() { return sh(DEV).getRange(DEV.r0, 1, DEV.r1 - DEV.r0 + 1, 5)
 
 // Safe to run any time. Adds what the reminders need to the sheet, only if it is missing.
 function ensureSetup_() {
+  ensureTimeColumn_();
   const ss = SpreadsheetApp.getActive(), s = ss.getSheetByName(SET.sheet);
   if (s) {
     const add = [
