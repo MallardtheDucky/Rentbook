@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rentbook</title><link rel="icon" href="icon-192.png">
-<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1F6B4F"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="config.js"></script>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1F6B4F"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="config.js"></script><script src="push-config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -79,6 +79,8 @@ details ul{padding-bottom:.4rem}
 .tog i{width:3.4rem;height:2rem;border-radius:99px;background:var(--line);position:relative;flex:none}
 .tog i:after{content:"";position:absolute;top:.2rem;left:.2rem;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--card);transition:left .15s}
 .tog.on{border-color:var(--late);color:var(--late)}.tog.on i{background:var(--late)}.tog.on i:after{left:1.6rem}
+.tog.green.on{border-color:var(--pine);color:var(--pine)}.tog.green.on i{background:var(--pine)}.tog.green.on i:after{background:var(--onp)}
+.note{margin:.7rem 0 0;font-size:.95rem;color:var(--soon)}
 .leg p{display:flex;gap:.6rem;align-items:center;margin:.5rem 0}
 .brand{display:flex;align-items:center;gap:.45rem;font-weight:700;color:var(--pine);margin-bottom:.4rem}.brand svg{width:1.8rem;height:1.8rem;flex:none}
 .who{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.2rem 0;border-top:1px solid var(--line);font-weight:700}
@@ -148,7 +150,7 @@ const money=n=>'\u20B1'+Math.round(n).toLocaleString('en-US');
 const fd=(s,o)=>s?new Date(s+'T00:00:00Z').toLocaleDateString('en-US',Object.assign({timeZone:'UTC'},o||{month:'short',day:'numeric',year:'numeric'})):'';
 const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const iso=n=>new Date(n*DAY).toISOString().slice(0,10);
-const S={tenants:[],payments:[],changes:[],owners:[],apts:[],settings:{allowDelete:false,warnDays:7},view:'home',id:null,year:+today().slice(0,4),hf:'',hc:'',q:'',loading:true,err:''};
+const S={tenants:[],payments:[],changes:[],owners:[],apts:[],settings:{allowDelete:false,warnDays:7,remindHour:8,stopAfter:30,pushReady:false},view:'home',id:null,year:+today().slice(0,4),hf:'',hc:'',q:'',loading:true,err:''};
 let METHOD=ls.get('rt_m')||'GCash',SC=0;
 document.documentElement.dataset.ts=ls.get('rt_ts')||'0';
 
@@ -174,7 +176,7 @@ function local(a,q){
  }
  if(a==='addCollector'&&!D.o.includes(q.name))D.o.push(q.name);
  if(a==='removeCollector')D.o=D.o.filter(n=>n!==q.name);
- if(a==='setSetting')D.s[q.key]=q.key==='warnDays'?+q.value:!!q.value;
+ if(a==='setSetting')D.s[q.key]=['warnDays','remindHour','stopAfter'].includes(q.key)?+q.value:!!q.value;
  if(a==='saveTenant'){
   let t=q.row&&D.t.find(x=>x.row==q.row);
   if(t){
@@ -192,6 +194,95 @@ async function api(a,q={}){
  if(demo)return local(a,q);
  const r=await fetch(CFG.API_URL,{method:'POST',body:JSON.stringify(Object.assign({},q,{action:a,pin:ls.get('rt_pin')||''}))});
  const j=await r.json();if(!j.ok)throw new Error(j.error);return j.data;
+}
+
+/* ---- Phone reminders (Firebase Cloud Messaging) ---- */
+const FBV='10.12.2',FB=CFG.FIREBASE||{};
+const PUSH={
+ cfg:()=>!!(FB.apiKey&&FB.projectId&&FB.messagingSenderId&&FB.appId&&CFG.VAPID_KEY),
+ can:()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window,
+ ios:()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),
+ installed:()=>navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches),
+ on:()=>ls.get('rt_push')==='1'&&'Notification' in window&&Notification.permission==='granted',
+ denied:()=>'Notification' in window&&Notification.permission==='denied',
+ label:()=>/iPad/.test(navigator.userAgent)?'iPad':/iPhone|iPod/.test(navigator.userAgent)?'iPhone':/Android/.test(navigator.userAgent)?'Android phone':'Phone',
+ ready:()=>!demo&&PUSH.cfg()&&S.settings.pushReady
+};
+const addScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('No internet'));document.head.appendChild(s)});
+async function fbMessaging(){
+ if(!window.firebase){
+  await addScript('https://www.gstatic.com/firebasejs/'+FBV+'/firebase-app-compat.js');
+  await addScript('https://www.gstatic.com/firebasejs/'+FBV+'/firebase-messaging-compat.js');
+ }
+ if(!firebase.apps.length)firebase.initializeApp(FB);
+ return firebase.messaging();
+}
+async function pushToken(){
+ const m=await fbMessaging(),reg=await navigator.serviceWorker.ready;
+ const t=await m.getToken({vapidKey:CFG.VAPID_KEY,serviceWorkerRegistration:reg});
+ if(!t)throw new Error('No phone code was given');
+ return t;
+}
+let pushBusy=false;
+async function pushOn(){
+ if(pushBusy)return;
+ if(demo)return say('Reminders work once the app is connected to your Google Sheet.');
+ if(!PUSH.can())return say(PUSH.ios()&&!PUSH.installed()?'First add Rentbook to your Home Screen, then open it from there.':'This phone cannot show reminders from this app.');
+ pushBusy=true;
+ try{
+  const p=await Notification.requestPermission();
+  if(p!=='granted'){say('Reminders are blocked. Allow notifications for Rentbook in your phone Settings.');return}
+  say('Turning on...');
+  const tok=await pushToken();
+  await api('registerDevice',{token:tok,old:ls.get('rt_tok')||'',label:PUSH.label()});
+  ls.set('rt_tok',tok);ls.set('rt_push','1');say('Reminders are ON');
+ }catch(e){say('Could not turn on: '+e.message)}
+ finally{pushBusy=false;render()}
+}
+async function pushOff(){
+ ls.set('rt_push','0');
+ try{const t=ls.get('rt_tok');if(t)await api('unregisterDevice',{token:t});say('Reminders are OFF')}
+ catch(e){say('Off on this phone. The sheet could not be told: '+e.message)}
+ render();
+}
+async function pushTest(el){
+ const t=ls.get('rt_tok');if(!t)return say('Turn reminders on first.');
+ el.disabled=true;
+ try{await api('testPush',{token:t});say('Sent. It should appear in a few seconds.')}
+ catch(e){say(e.message)}
+ el.disabled=false;
+}
+// Once a day, make sure this phone's code is still the one the sheet knows.
+async function pushRefresh(){
+ if(!PUSH.ready()||!PUSH.can()||!PUSH.on()||ls.get('rt_chk')===today())return;
+ try{
+  const t=await pushToken(),old=ls.get('rt_tok')||'';
+  if(t!==old){await api('registerDevice',{token:t,old,label:PUSH.label()});ls.set('rt_tok',t)}
+  ls.set('rt_chk',today());
+ }catch(e){}
+}
+function pushCard(){
+ const opt=(list,cur,fm)=>(list.some(x=>x[0]===cur)?list:list.concat([[cur,fm?fm(cur):cur+'']]).sort((a,b)=>a[0]-b[0])).map(([v,l])=>`<option value="${v}" ${v===cur?'selected':''}>${l}</option>`).join('');
+ const hours=[[6,'6:00 AM'],[7,'7:00 AM'],[8,'8:00 AM'],[9,'9:00 AM'],[12,'12:00 noon'],[17,'5:00 PM']];
+ const stops=[[7,'7 days late'],[14,'14 days late'],[30,'30 days late'],[60,'60 days late'],[0,'Never stop']];
+ let top;
+ if(demo)top='<p class="mute">Reminders work once the app is connected to your Google Sheet.</p>';
+ else if(!PUSH.ready())top='<p class="mute">Reminders are not set up yet. Ask the family helper to finish Part 2 of the guide.</p>';
+ else if(!PUSH.can())top=PUSH.ios()&&!PUSH.installed()
+  ?'<p class="mute">On an iPhone, first tap the Share button, then <b>Add to Home Screen</b>. Open Rentbook from the new icon and come back here.</p>'
+  :'<p class="mute">This phone or browser cannot show reminders. Try Chrome.</p>';
+ else{
+  const on=PUSH.on();
+  top=`<p class="mute">A short message on this phone when rent is late, due today, or coming up. One message a day at most.</p>
+  <button class="tog green ${on?'on':''}" data-a="pushtog" role="switch" aria-checked="${on}"><span>${on?'On':'Off'}</span><i></i></button>
+  ${PUSH.denied()?'<p class="note">Notifications are blocked for Rentbook. Open your phone Settings, find Rentbook (or Chrome), and allow notifications. Then come back and tap the switch.</p>':''}
+  ${on?'<div style="height:.6rem"></div><button class="btn ghost" data-a="pushtest">Send me a test message</button>':''}`;
+ }
+ const rules=PUSH.ready()?`<div class="set"><h3>Reminder times</h3><p class="mute">These two choices are the same for every phone.</p>
+  <label for="s-h">Send the reminder at</label><select id="s-h">${opt(hours,S.settings.remindHour,h=>(h%12||12)+':00 '+(h<12?'AM':'PM'))}</select>
+  <label for="s-x">Stop reminding about someone after they are</label><select id="s-x">${opt(stops,S.settings.stopAfter,n=>n+' days late')}</select>
+  <p class="mute" style="margin-top:.6rem">They still show in red on the Today page. This only stops the same message coming forever.</p></div>`:'';
+ return`<div class="set"><h3>Reminders on this phone</h3>${top}</div>${rules}`;
 }
 
 const LOGO=`<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="11" fill="var(--pine)"/><path d="M17 37V11h10.2c5.2 0 8.3 2.6 8.3 6.9 0 3.3-1.9 5.6-5 6.5L36.4 37h-5.6l-5.3-11.2h-4.1V37zm4.4-21.8v6.9h5.3c2.4 0 3.8-1.2 3.8-3.4s-1.4-3.5-3.8-3.5z" fill="var(--onp)" fill-rule="evenodd"/></svg>`;
@@ -227,7 +318,8 @@ const views={
   const owe=act.filter(r=>r.c.owes>0&&(r.c.status==='late'||r.c.status==='today')),soon=act.filter(r=>r.c.status==='soon'&&!owe.includes(r)),ok=act.filter(r=>!owe.includes(r)&&!soon.includes(r));
   const sec=(t,n,k)=>`<h2 class="sec">${t}<span class="${k}">${n}</span></h2>`;
   if(!act.length)return'<p>No tenants yet. Tap Tenants, then Add tenant.</p>';
-  return`${demo?'<p class="demo">Practice mode: what you type stays on this phone only.</p>':''}
+  const nb=PUSH.ready()&&PUSH.can()&&!PUSH.on()&&!PUSH.denied()&&ls.get('rt_nb')!=='1'?`<div class="set"><h3>Get a reminder on this phone</h3><p class="mute">A short message when rent is late or due. You can turn it off any time in Settings.</p><button class="btn" data-a="pushon">Turn on reminders</button><button class="lnk" data-a="nb">Not now</button></div>`:'';
+  return`${demo?'<p class="demo">Practice mode: what you type stays on this phone only.</p>':''}${nb}
   ${!owe.length?'<p class="good">Nobody owes anything today.</p>':''}
   ${owe.length?sec('Owes money',owe.length,'late')+owe.map(card).join(''):''}
   ${soon.length?sec('Due soon',soon.length,'soon')+soon.map(card).join(''):''}
@@ -271,6 +363,7 @@ const views={
   const on=S.settings.allowDelete,ts=ls.get('rt_ts')||'0';
   return`<button class="lnk" data-a="go" data-v="home">\u2039 Back</button>
   ${demo?'<p class="demo">Practice mode: nothing here goes to the Google Sheet.</p>':''}
+  ${pushCard()}
   <div class="set"><h3>Removing payments</h3><p class="mute">Off keeps every payment safe. Turn it on only to fix a mistake, then turn it off again.</p><button class="tog ${on?'on':''}" data-a="togdel" role="switch" aria-checked="${on}"><span>${on?'On - Remove buttons are showing':'Off'}</span><i></i></button></div>
   <div class="set"><h3>Who collects rent</h3><p class="mute">These names show up under Who collected it? when you record a payment.</p>${S.owners.map(o=>`<div class="who"><span>${esc(o)}</span><button class="lnk" style="color:var(--late)" data-a="delcol" data-n="${esc(o)}">Remove</button></div>`).join('')||'<p class="mute">No names yet.</p>'}<label for="c-n">Add a person</label><input id="c-n" placeholder="Example: Auntie Rose" autocomplete="off"><div style="height:.6rem"></div><button class="btn" data-a="addcol">Add this person</button></div>
   <div class="set"><h3>Warn me before rent is due</h3><p class="mute">Tenants due within this many days turn yellow.</p><select id="s-w" aria-label="Warning days">${[3,5,7,10,14].map(n=>`<option value="${n}" ${n===WARN()?'selected':''}>${n} days before</option>`).join('')}</select></div>
@@ -405,7 +498,7 @@ async function load(){
   if(e.message==='bad pin'){ls.set('rt_pin','');S.loading=false;render();return askPin('That PIN is not right. Try again.')}
   S.err='Check your internet, then try again. ('+e.message+')';
  }
- S.loading=false;render();
+ S.loading=false;render();pushRefresh();
 }
 const A={
  go:e=>{S.view=e.dataset.v;S.id=null;render();scrollTo(0,0)},
@@ -424,6 +517,7 @@ const A={
   if(!confirm('Remove '+n+' from the list? Payments they already collected keep their name.'))return;
   try{await api('removeCollector',{name:n});await load();say(n+' removed')}catch(x){say('Not removed: '+x.message)}
  },
+ pushtog:()=>PUSH.on()?pushOff():pushOn(),pushon:pushOn,pushtest:pushTest,nb:()=>{ls.set('rt_nb','1');render()},
  ts:e=>{ls.set('rt_ts',e.dataset.v);document.documentElement.dataset.ts=e.dataset.v;render()},
  reload:()=>{closeSheet();load()},yr:e=>{S.year+=+e.dataset.d;render()},
  delp:async e=>{
@@ -450,6 +544,10 @@ document.addEventListener('change',async e=>{
  if(e.target.id==='hc'){S.hc=e.target.value;render()}
  if(e.target.id==='f-t')payUpd(!SC);
  if(e.target.id==='f-img')scan(e.target.files[0]);
+ if(e.target.id==='s-h'||e.target.id==='s-x'){
+  try{await api('setSetting',{key:e.target.id==='s-h'?'remindHour':'stopAfter',value:+e.target.value});await load();say('Saved')}
+  catch(x){say('Not changed: '+x.message)}
+ }
  if(e.target.id==='s-w'){
   try{await api('setSetting',{key:'warnDays',value:+e.target.value});await load();say('Saved')}
   catch(x){say('Not changed: '+x.message)}
